@@ -31,7 +31,8 @@ const Times = sequelize.define('times', {
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.time}!`);
     // Remove force: true for prod
-    Times.sync({ force: true });
+    Times.sync();
+    // { force: true }
 });
 
 client.on('message', async message => {
@@ -89,9 +90,24 @@ client.on('message', async message => {
             }
             return message.reply(`Could not find time: ${timeName}`);
         } else if (command === 'showtimes') {
-            const timeList = await Times.findAll({ attributes: ['name'] });
-            const timeString = timeList.map(t => t.name).join(', ') || 'No times set.';
-            return message.channel.send(`List of times: ${timeString}`);
+            var scheduleEmbed = {
+                color: 0x0099ff,
+                title: 'Schedule',
+                fields: [],
+                timestamp: new Date(),
+            };
+            const timeList = await Times.findAll();
+            timeList.forEach(t => {
+                console.log(t.name);
+                console.log(t.time);
+                scheduleEmbed.fields.push({
+                    name: t.name,
+                    value: t.time.toString(),
+                    inline: true
+                })
+            });
+            
+            return message.channel.send({ embed: scheduleEmbed });
         } else if (command === 'removetime') {
             const timeName = commandArgs;
             const rowCount = await Times.destroy({ where: { name: timeName } });
@@ -118,6 +134,7 @@ client.on('message', async message => {
     }
 
 });
+
 
 function parseTime(timeString) {
     return date.parse(`${timeString} ${new Date().getFullYear().toString()}`, 'MMMM D h:m A YYYY');
