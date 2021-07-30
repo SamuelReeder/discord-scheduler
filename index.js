@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const Discord = require('discord.js');
 const Sequelize = require('sequelize');
 const date = require('date-and-time');
@@ -124,5 +126,4 @@ function parseTime(timeString) {
 function timeToString(timeDate) {
     return date.format(timeDate, "MMMM D h:mm A YYYY");
 }
-
-client.login('ODUyODAxNDYwODk4NjI3NjM1.YMMHQA.66Cle0G9GCt7T2s-LAFWWM3XJZM');
+client.login(process.env.DISCORD_SCHEDULE_BOT);
