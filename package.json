@@ -1,0 +1,32 @@
+{
+  "name": "discord-scheduler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamuelReeder/discord-scheduler.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SamuelReeder/discord-scheduler/issues"
+  },
+  "homepage": "https://github.com/SamuelReeder/discord-scheduler#readme",
+  "dependencies": {
+    "canvacord": "^5.2.1",
+    "date-and-time": "^1.0.1",
+    "discord.js": "^12.5.3",
+    "fs": "0.0.1-security",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
