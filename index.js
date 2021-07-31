@@ -15,10 +15,11 @@ const sequelize = new Sequelize('database', 'user', 'password', {
 });
 
 const Times = sequelize.define('times', {
-    name: {
-        type: Sequelize.STRING,
-        unique: true,
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
     },
+    name: Sequelize.STRING,
     time: Sequelize.DATE,
     username: Sequelize.STRING,
     usage_count: {
@@ -28,11 +29,11 @@ const Times = sequelize.define('times', {
     },
 });
 
+
+
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.time}!`);
-    // Remove force: true for prod
-    Times.sync();
-    // { force: true }
+    Times.sync({ force: true });
 });
 
 client.on('message', async message => {
@@ -41,16 +42,24 @@ client.on('message', async message => {
         const command = input.shift();
         const commandArgs = input.join(' ');
 
+        const timeList = await Times.findAll();
+        timeList.forEach(i => {
+            if (i.time.getTime() < d.getTime()) {
+                console.log("worked");
+                Times.destroy({ where: { time: i.time } });
+            }
+        });
+
         if (command === 'addtime') {
             const splitArgs = commandArgs.split(' ');
 
             const timeName = splitArgs.shift();
             const timeValue = splitArgs.join(' ');
 
-            console.log(timeValue);
-
             try {
+                const timeList = await Times.findAll();
                 const time = await Times.create({
+                    id: timeList.length === 0 ? 0 : timeList[timeList.length - 1].id + 1,
                     name: timeName,
                     time: parseTime(timeValue),
                     username: message.author.username,
@@ -59,8 +68,9 @@ client.on('message', async message => {
             }
             catch (e) {
                 if (e.name === 'SequelizeUniqueConstraintError') {
-                    return message.reply('Already scheduled');
+                    return message.reply('Duplicate');
                 }
+                console.log(e);
                 return message.reply('Something went wrong');
             }
         } else if (command === 'time') {
@@ -89,7 +99,7 @@ client.on('message', async message => {
                 return message.channel.send(`${timeName} was created by ${time.username} at ${time.createdAt} and has been used ${time.usage_count} times.`);
             }
             return message.reply(`Could not find time: ${timeName}`);
-        } else if (command === 'showtimes') {
+        } else if (command === 'times') {
             var scheduleEmbed = {
                 color: 0x0099ff,
                 title: 'Schedule',
@@ -97,12 +107,13 @@ client.on('message', async message => {
                 timestamp: new Date(),
             };
             const timeList = await Times.findAll();
-            timeList.forEach(t => {
-                console.log(t.name);
-                console.log(t.time);
+            const sortedTimeList = timeList.sort((a, b) => {
+                return a.time - b.time;
+            });
+            sortedTimeList.forEach(t => {
                 scheduleEmbed.fields.push({
-                    name: t.name,
-                    value: t.time.toString(),
+                    name: `${t.name} - ${t.username}`,
+                    value: t.time.toLocaleString(),
                     inline: true
                 })
             });
@@ -118,20 +129,6 @@ client.on('message', async message => {
     }
 
     if (message.author.bot) return;
-
-    console.log(new Date().getFullYear().toString());
-    if (message.content.toLowerCase().includes('$set')) {
-        let m = message.content.trim().replace('$set ', '');
-        let time = date.parse(`${m} ${new Date().getFullYear().toString()}`, 'MMMM D h:m A YYYY');
-        console.log(time);
-        schedule.times.push(
-            {
-                key: time,
-                author: message.author.id,
-            }
-        );
-
-    }
 
 });
 
